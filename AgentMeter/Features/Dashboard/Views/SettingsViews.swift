@@ -1,14 +1,25 @@
 import SwiftUI
 
 struct AgentMeterSettingsView: View {
+    private var hasAccount: Bool {
+        AgentKind.allCases.contains(where: viewModel.hasConfiguredConnection(for:))
+    }
+
     @ObservedObject var viewModel: DashboardViewModel
     @ObservedObject var updater: AppUpdater
+    @ObservedObject var launchAtLogin: LaunchAtLogin
     @Environment(\.dismiss) private var dismiss
     var onDone: (() -> Void)?
 
-    init(viewModel: DashboardViewModel, updater: AppUpdater, onDone: (() -> Void)? = nil) {
+    init(
+        viewModel: DashboardViewModel,
+        updater: AppUpdater,
+        launchAtLogin: LaunchAtLogin,
+        onDone: (() -> Void)? = nil
+    ) {
         self.viewModel = viewModel
         self.updater = updater
+        self.launchAtLogin = launchAtLogin
         self.onDone = onDone
     }
 
@@ -38,9 +49,12 @@ struct AgentMeterSettingsView: View {
                 Text("Accounts")
                     .font(.headline)
 
-                Text("Add or manage the agents whose usage appears in Agent Meter.")
+                Text(hasAccount
+                    ? "Add or manage the agents whose usage appears in Agent Meter."
+                    : "Welcome to Agent Meter. Add Codex or Claude Code below to see your usage in the menu bar. Each one uses the login you already have.")
                     .font(.caption)
                     .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
 
                 // Every service is listed here, whether or not it has been added or has reported usage.
                 ForEach(AgentKind.allCases) { kind in
@@ -54,6 +68,10 @@ struct AgentMeterSettingsView: View {
                     }
                 }
             }
+
+            Divider()
+
+            GeneralSettingsSection(launchAtLogin: launchAtLogin)
 
             Divider()
 
@@ -80,6 +98,46 @@ struct AgentMeterSettingsView: View {
                     viewModel.connectionEditor = nil
                 }
             )
+        }
+    }
+}
+
+private struct GeneralSettingsSection: View {
+    @ObservedObject var launchAtLogin: LaunchAtLogin
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("General")
+                .font(.headline)
+
+            Toggle("Launch Agent Meter at login", isOn: Binding(
+                get: { launchAtLogin.isEnabled },
+                set: { launchAtLogin.setEnabled($0) }
+            ))
+            .toggleStyle(.checkbox)
+            .font(.caption)
+
+            if launchAtLogin.needsApproval {
+                HStack(spacing: 4) {
+                    Text("Allow Agent Meter under Login Items in System Settings to finish turning this on.")
+                        .foregroundStyle(.secondary)
+
+                    Button("Open Settings") {
+                        launchAtLogin.openSystemSettings()
+                    }
+                    .buttonStyle(.link)
+                }
+                .font(.caption)
+            }
+
+            if let errorMessage = launchAtLogin.errorMessage {
+                Text(errorMessage)
+                    .font(.caption)
+                    .foregroundStyle(.red)
+            }
+        }
+        .onAppear {
+            launchAtLogin.refresh()
         }
     }
 }

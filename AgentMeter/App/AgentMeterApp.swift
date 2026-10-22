@@ -20,6 +20,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     private let statusMenu = NSMenu()
     private let viewModel = DashboardViewModel.shared
     private let updater = AppUpdater()
+    private let launchAtLogin = LaunchAtLogin()
     private var settingsWindow: NSWindow?
     private var viewModelObserver: AnyCancellable?
     private var updaterObserver: AnyCancellable?
@@ -32,10 +33,19 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         configureMenu()
         observeViewModel()
         startRefreshingUsage()
+        guideFirstRun()
     }
 
     func applicationWillTerminate(_ notification: Notification) {
         refreshTask?.cancel()
+    }
+
+    /// A menu bar app has no window to say where to start, so open Settings once for a new user.
+    private func guideFirstRun() {
+        let hasAccount = AgentKind.allCases.contains(where: viewModel.hasConfiguredConnection(for:))
+        if FirstRunGuide().shouldOpenSettings(hasAccount: hasAccount) {
+            showSettings()
+        }
     }
 
     private func configureStatusItem() {
@@ -139,7 +149,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         }
 
         if configuredAgents.isEmpty {
-            addInformationalItem("No accounts added", systemImage: "link.badge.plus")
+            statusMenu.addItem(actionItem(
+                "Add an account…",
+                action: #selector(showSettings),
+                keyEquivalent: "",
+                systemImage: "link.badge.plus"
+            ))
         } else {
             for (index, agent) in configuredAgents.enumerated() {
                 if index > 0 {
@@ -312,7 +327,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 
     @objc private func showSettings() {
         if settingsWindow == nil {
-            let contentView = AgentMeterSettingsView(viewModel: viewModel, updater: updater) { [weak self] in
+            let contentView = AgentMeterSettingsView(viewModel: viewModel, updater: updater, launchAtLogin: launchAtLogin) { [weak self] in
                 self?.settingsWindow?.close()
             }
             let hostingController = NSHostingController(rootView: contentView)

@@ -1,4 +1,5 @@
 import Foundation
+import ServiceManagement
 import Testing
 @testable import AgentMeter
 
@@ -208,6 +209,64 @@ struct AgentMeterTests {
         #expect(MenuBarValueStyle.usedPercentage.text(for: nil, now: now) == "—")
     }
 
+    @Test func firstRunGuideOpensSettingsOnceForANewUser() {
+        let guide = FirstRunGuide(defaults: makeDefaults())
+
+        #expect(guide.shouldOpenSettings(hasAccount: false))
+        // Every later launch, even with no account, is left to the user.
+        #expect(!guide.shouldOpenSettings(hasAccount: false))
+    }
+
+    @Test func firstRunGuideNeverInterruptsSomeoneWithAnAccount() {
+        let defaults = makeDefaults()
+
+        #expect(!FirstRunGuide(defaults: defaults).shouldOpenSettings(hasAccount: true))
+        // Removing every account later must not bring the guide back.
+        #expect(!FirstRunGuide(defaults: defaults).shouldOpenSettings(hasAccount: false))
+    }
+
+    @Test @MainActor func launchAtLoginTurnsOnOnceForAnInstalledApp() {
+        let service = FakeLoginItemService()
+        let defaults = makeDefaults()
+
+        let first = LaunchAtLogin(service: service, defaults: defaults, bundlePath: "/Applications/AgentMeter.app")
+        #expect(first.isEnabled)
+        #expect(service.registerCount == 1)
+
+        // The user turns it off; later launches must not turn it back on.
+        first.setEnabled(false)
+        #expect(!first.isEnabled)
+        let second = LaunchAtLogin(service: service, defaults: defaults, bundlePath: "/Applications/AgentMeter.app")
+        #expect(!second.isEnabled)
+        #expect(service.registerCount == 1)
+    }
+
+    @Test @MainActor func launchAtLoginIsLeftAloneForDevelopmentBuilds() {
+        let service = FakeLoginItemService()
+
+        let launchAtLogin = LaunchAtLogin(
+            service: service,
+            defaults: makeDefaults(),
+            bundlePath: "/Users/someone/Library/Developer/Xcode/DerivedData/AgentMeter/Build/Products/Debug/AgentMeter.app"
+        )
+
+        #expect(!launchAtLogin.isEnabled)
+        #expect(service.registerCount == 0)
+    }
+
+    @Test @MainActor func launchAtLoginReportsApprovalAndFailures() {
+        let service = FakeLoginItemService(registeredStatus: .requiresApproval)
+        let launchAtLogin = LaunchAtLogin(service: service, defaults: makeDefaults(), bundlePath: "/tmp/AgentMeter.app")
+
+        launchAtLogin.setEnabled(true)
+        #expect(launchAtLogin.needsApproval)
+        #expect(launchAtLogin.isEnabled)
+
+        service.shouldFail = true
+        launchAtLogin.setEnabled(false)
+        #expect(launchAtLogin.errorMessage == "Could not turn off Launch at login.")
+    }
+
     @Test func installSourceDetectsHomebrewCask() {
         let homebrew = InstallSource.detect(
             caskroomDirectories: ["/opt/homebrew/Caskroom", "/usr/local/Caskroom"],
@@ -329,5 +388,29 @@ private extension AgentUsageSnapshot {
 
     static var unavailableCodex: AgentUsageSnapshot {
         AgentUsageSnapshot(kind: .codex, isConnected: false, lastUpdated: nil)
+    }
+}
+
+private final class FakeLoginItemService: LoginItemService {
+    struct Failure: Error {}
+
+    var status: SMAppService.Status = .notRegistered
+    var shouldFail = false
+    private(set) var registerCount = 0
+    private let registeredStatus: SMAppService.Status
+
+    init(registeredStatus: SMAppService.Status = .enabled) {
+        self.registeredStatus = registeredStatus
+    }
+
+    func register() throws {
+        if shouldFail { throw Failure() }
+        registerCount += 1
+        status = registeredStatus
+    }
+
+    func unregister() throws {
+        if shouldFail { throw Failure() }
+        status = .notRegistered
     }
 }

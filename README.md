@@ -14,6 +14,7 @@ Agent Meter is a macOS menu bar app that shows your Codex and Claude Code usage 
 - Live preview in Settings (sample values fill in for services without data)
 - Token counts are not shown: the services report usage only as a percentage and a reset time
 - Refreshes automatically every 60 seconds
+- Starts at login (turn it off under **Settings → General**), and opens Settings once on the very first launch to help you add an account
 
 ## Supported services
 

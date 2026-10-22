@@ -18,6 +18,8 @@
 		A10000000000000000000F06 /* AppUpdater.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000000000000000000F106 /* AppUpdater.swift */; };
 		A10000000000000000000F09 /* LICENSE in Resources */ = {isa = PBXBuildFile; fileRef = A2000000000000000000F109 /* LICENSE */; };
 		A10000000000000000000F0A /* THIRD_PARTY_NOTICES.md in Resources */ = {isa = PBXBuildFile; fileRef = A2000000000000000000F10A /* THIRD_PARTY_NOTICES.md */; };
+		A10000000000000000000F0B /* LaunchAtLogin.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000000000000000000F10B /* LaunchAtLogin.swift */; };
+		A10000000000000000000F0D /* FirstRunGuide.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000000000000000000F10D /* FirstRunGuide.swift */; };
 		C10000000000000000000001 /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = C30000000000000000000001 /* Sparkle */; };
 /* End PBXBuildFile section */
 
@@ -60,6 +62,8 @@
 		A2000000000000000000F108 /* ExportOptions.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = ExportOptions.plist; sourceTree = "<group>"; };
 		A2000000000000000000F109 /* LICENSE */ = {isa = PBXFileReference; lastKnownFileType = text; path = LICENSE; sourceTree = "<group>"; };
 		A2000000000000000000F10A /* THIRD_PARTY_NOTICES.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = THIRD_PARTY_NOTICES.md; sourceTree = "<group>"; };
+		A2000000000000000000F10B /* LaunchAtLogin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LaunchAtLogin.swift; sourceTree = "<group>"; };
+		A2000000000000000000F10D /* FirstRunGuide.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirstRunGuide.swift; sourceTree = "<group>"; };
 		A2000000000000000000F105 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -131,6 +135,7 @@
 			children = (
 				A70000000000000000000005 /* Dashboard */,
 				A7000000000000000000F106 /* Updates */,
+				A7000000000000000000F10B /* Startup */,
 			);
 			path = Features;
 			sourceTree = "<group>";
@@ -219,6 +224,15 @@
 				A2000000000000000000F108 /* ExportOptions.plist */,
 			);
 			path = scripts;
+			sourceTree = "<group>";
+		};
+		A7000000000000000000F10B /* Startup */ = {
+			isa = PBXGroup;
+			children = (
+				A2000000000000000000F10B /* LaunchAtLogin.swift */,
+				A2000000000000000000F10D /* FirstRunGuide.swift */,
+			);
+			path = Startup;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -364,6 +378,8 @@
 				A10000000000000000000008 /* DashboardContentViews.swift in Sources */,
 				A10000000000000000000009 /* SettingsViews.swift in Sources */,
 				A10000000000000000000F06 /* AppUpdater.swift in Sources */,
+				A10000000000000000000F0B /* LaunchAtLogin.swift in Sources */,
+				A10000000000000000000F0D /* FirstRunGuide.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -423,11 +439,12 @@
 		AC0000000000000000000003 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				AUTOMATION_APPLE_EVENTS = NO;
 				CODE_SIGN_ENTITLEMENTS = AgentMeter/AgentMeter.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 6;
+				CURRENT_PROJECT_VERSION = 7;
 				DEVELOPMENT_TEAM = Z8BT88C36P;
 				ENABLE_APP_SANDBOX = NO;
 				ENABLE_HARDENED_RUNTIME = YES;
@@ -445,7 +462,7 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MARKETING_VERSION = 1.0.0;
+				MARKETING_VERSION = 1.0.1;
 				PRODUCT_BUNDLE_IDENTIFIER = dev.scolor.AgentMeter;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				RUNTIME_EXCEPTION_ALLOW_DYLD_ENVIRONMENT_VARIABLES = NO;
@@ -462,11 +479,12 @@
 		AC0000000000000000000004 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				AUTOMATION_APPLE_EVENTS = NO;
 				CODE_SIGN_ENTITLEMENTS = AgentMeter/AgentMeter.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 6;
+				CURRENT_PROJECT_VERSION = 7;
 				DEVELOPMENT_TEAM = Z8BT88C36P;
 				ENABLE_APP_SANDBOX = NO;
 				ENABLE_HARDENED_RUNTIME = YES;
@@ -483,7 +501,7 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MARKETING_VERSION = 1.0.0;
+				MARKETING_VERSION = 1.0.1;
 				PRODUCT_BUNDLE_IDENTIFIER = dev.scolor.AgentMeter;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				RUNTIME_EXCEPTION_ALLOW_DYLD_ENVIRONMENT_VARIABLES = NO;
