@@ -13,7 +13,6 @@ Agent Meter is a macOS menu bar app that shows your Codex and Claude Code usage 
 - For each item, choose whether to show the period label and the bar, and whether the value is used, remaining (as a number or percentage), time until reset, or hidden
 - Live preview in Settings (sample values fill in for services without data)
 - Token counts are not shown: the services report usage only as a percentage and a reset time
-- Only periods that are actually available are shown
 - Refreshes automatically every 60 seconds
 
 ## Supported services
@@ -45,8 +44,10 @@ You can also update by hand:
 ## Requirements
 
 - macOS 14 or later
-- Codex CLI or a Codex-enabled IDE extension
-- Claude Code CLI or a Claude Code-enabled IDE extension
+- Codex CLI or a Codex-enabled IDE extension (for Codex)
+- Claude Code CLI or a Claude Code-enabled IDE extension (for Claude Code)
+
+You only need the services you want to show.
 - Xcode, to build from source
 
 The app runs external CLIs, so the App Sandbox is disabled. It is distributed through GitHub Releases and Homebrew, not the Mac App Store.
@@ -87,12 +88,14 @@ xcodebuild -project AgentMeter.xcodeproj -scheme AgentMeter \
 
 Agent Meter has no login of its own for Claude. It reuses the Claude Code login, whether it was made in a terminal or from a supported IDE extension.
 
-- If you are already logged in (`claude auth login`), just press **Recheck** in the settings.
+In **Settings → Accounts**, choose **Add** (or **Manage**) for Claude Code:
+
+- If you are already logged in (`claude auth login`), press **Recheck**.
 - If not, **Log in** starts the official `claude auth login` browser (OAuth) flow.
 
-To read usage, Agent Meter reads the access token Claude Code keeps in the macOS Keychain (`Claude Code-credentials`) and calls Anthropic's usage endpoint. The token is read through macOS's `security` tool, the same tool Claude Code uses to write it, so macOS normally does not ask for permission. Token renewal is left to Claude Code: when the token has expired, Agent Meter runs `claude auth status` so Claude Code can refresh its own credentials, then reads them again. Agent Meter never refreshes, writes, or stores the token.
+To read usage, Agent Meter reads the access token Claude Code keeps in the macOS Keychain (`Claude Code-credentials`) and calls Anthropic's usage endpoint. The token is read through macOS's `security` tool, the same tool Claude Code uses to write it, which is meant to avoid macOS asking for permission on every read. If a permission prompt still appears, choose **Always Allow**. Token renewal is left to Claude Code: when the token has expired, Agent Meter runs `claude auth status` so Claude Code can refresh its own credentials, then reads them again. Agent Meter never refreshes, writes, or stores the token.
 
-The only data cached is the 5-hour and 7-day usage percentages and reset times. Prompts, responses and working directories are never stored.
+Usage values are kept in memory only. The only things saved to disk are which services you added and your menu bar display settings. Prompts, responses and working directories are never stored.
 
 ## Releasing
 
@@ -105,11 +108,13 @@ One-time setup:
 3. A Sparkle EdDSA key: run Sparkle's `generate_keys` (in `SourcePackages/artifacts/sparkle/Sparkle/bin` after resolving packages) and set the printed public key as `SPARKLE_PUBLIC_ED_KEY` in the app target's build settings. Back up the private key with `generate_keys -x <file>`; without it, existing installs can no longer be updated.
 4. `gh auth login`.
 
-Then bump `MARKETING_VERSION` and `CURRENT_PROJECT_VERSION`, commit, and run:
+Then bump `MARKETING_VERSION` and `CURRENT_PROJECT_VERSION` (Sparkle only offers a build whose number is higher than the installed one), commit, and run:
 
 ```sh
 scripts/release.sh
 ```
+
+The working tree must be clean. Notarization can take anywhere from minutes to a few hours for a new account, and the script waits for it. `--no-publish` builds the ZIP and `appcast.xml` without creating a release; `--skip-notarize` skips notarization (local testing only) and cannot be combined with publishing.
 
 ## License
 

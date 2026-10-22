@@ -13,7 +13,6 @@ Agent Meterは、CodexとClaude Codeの利用制限をmacOSのメニューバー
 - 項目ごとに、期間ラベルとバーの表示／非表示、値の表示（使用・残りの数値または%、リセットまでの時間、非表示）を選択
 - 設定画面でプレビューを確認可能（データがないサービスはサンプル値で表示）
 - トークン数は表示できません（各サービスが返すのは使用率とリセット時刻のみのため）
-- 利用可能な期間だけを表示
 - 60秒間隔で自動更新
 
 ## 対応状況
@@ -45,8 +44,10 @@ brew install --cask scolor-dev/tap/agent-meter
 ## 動作要件
 
 - macOS 14以降
-- Codex CLIまたはCodex対応IDE拡張
-- Claude Code CLIまたはClaude Code対応IDE拡張
+- Codex CLIまたはCodex対応IDE拡張（Codexを表示する場合）
+- Claude Code CLIまたはClaude Code対応IDE拡張（Claude Codeを表示する場合）
+
+表示したいサービスの分だけで構いません。
 - ソースからビルドする場合はXcode
 
 外部CLIを実行するため、App Sandboxは無効です。Mac App Storeではなく、GitHub ReleasesとHomebrewで配布します。
@@ -87,12 +88,14 @@ xcodebuild -project AgentMeter.xcodeproj -scheme AgentMeter \
 
 Agent Meterは、Claude用の独自ログインを持ちません。ターミナルまたは対応IDE拡張で行ったClaude Codeのログインをそのまま使います。
 
-- すでにログイン済み（`claude auth login`）なら、設定の **Recheck** を押すだけで接続できます。
+**Settings → Accounts** で、Claude Codeの **Add**（追加済みなら **Manage**）を選びます。
+
+- すでにログイン済み（`claude auth login`）なら、**Recheck** を押します。
 - 未ログインの場合は、**Log in** で公式の `claude auth login`（ブラウザのOAuth）を起動します。
 
-使用率の取得には、Claude CodeがmacOSキーチェーン（`Claude Code-credentials`）に保存しているアクセストークンを読み取り、Anthropicの利用状況エンドポイントを呼び出します。読み取りには、Claude Codeが書き込みに使っているのと同じmacOS標準の `security` コマンドを使うため、通常はアクセス許可のダイアログは表示されません。トークンの更新はClaude Codeに任せます。期限切れのときは `claude auth status` を実行してClaude Code自身に更新させ、読み直します。Agent Meterがトークンを更新・書き込み・保存することはありません。
+使用率の取得には、Claude CodeがmacOSキーチェーン（`Claude Code-credentials`）に保存しているアクセストークンを読み取り、Anthropicの利用状況エンドポイントを呼び出します。読み取りには、Claude Codeが書き込みに使っているのと同じmacOS標準の `security` コマンドを使うため、読み取りのたびに許可を求められることを避けられるようにしています。それでも許可のダイアログが表示される場合は、**常に許可**を選んでください。トークンの更新はClaude Codeに任せます。期限切れのときは `claude auth status` を実行してClaude Code自身に更新させ、読み直します。Agent Meterがトークンを更新・書き込み・保存することはありません。
 
-保存するキャッシュは、5時間・7日の使用率とリセット時刻だけです。プロンプト、応答、作業ディレクトリは保存しません。
+使用率の値はメモリ上にだけ保持します。ディスクに保存するのは、追加したサービスと、メニューバーの表示設定だけです。プロンプト、応答、作業ディレクトリは保存しません。
 
 ## リリース手順
 
@@ -105,11 +108,13 @@ Agent Meterは、Claude用の独自ログインを持ちません。ターミナ
 3. SparkleのEdDSA鍵: パッケージ解決後の `SourcePackages/artifacts/sparkle/Sparkle/bin` にある `generate_keys` を実行し、表示された公開鍵をアプリターゲットのビルド設定 `SPARKLE_PUBLIC_ED_KEY` に設定します。秘密鍵は `generate_keys -x <ファイル>` でバックアップしてください。失うと、既存のインストールを更新できなくなります。
 4. `gh auth login`
 
-その後、`MARKETING_VERSION` と `CURRENT_PROJECT_VERSION` を上げてコミットし、次を実行します。
+その後、`MARKETING_VERSION` と `CURRENT_PROJECT_VERSION` を上げ（Sparkleは、インストール済みよりビルド番号が大きい版だけを提示します）、コミットして、次を実行します。
 
 ```sh
 scripts/release.sh
 ```
+
+作業ツリーはきれいな状態にしてください。新しいアカウントでは、Notarizationに数分から数時間かかることがあり、スクリプトは完了まで待ちます。`--no-publish` を付けると、リリースを作らずにZIPと `appcast.xml` だけを作ります。`--skip-notarize` はNotarizationを省略します（ローカルでの確認専用で、公開とは併用できません）。
 
 ## ライセンス
 
