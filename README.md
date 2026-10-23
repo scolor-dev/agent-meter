@@ -2,7 +2,14 @@
 
 [日本語](README.ja.md)
 
+[![Release](https://img.shields.io/github/v/release/scolor-dev/agent-meter)](https://github.com/scolor-dev/agent-meter/releases/latest)
+[![License: MIT](https://img.shields.io/github/license/scolor-dev/agent-meter)](LICENSE)
+![Platform: macOS 14+](https://img.shields.io/badge/platform-macOS%2014%2B-blue)
+
 Agent Meter is a macOS menu bar app that shows your Codex and Claude Code usage limits at a glance. It is built with SwiftUI.
+
+![Agent Meter in a dark menu bar, showing Claude Code 5-hour and weekly usage](docs/images/menu-bar-dark.png)
+![Agent Meter in a menu bar over a blue wallpaper](docs/images/menu-bar-blue.png)
 
 ## Features
 
